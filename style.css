@@ -1,0 +1,39 @@
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    min-height: 100vh;
+}
+
+
+
+#container{
+    display: grid;
+    grid-template-columns: repeat(8,1fr);
+}
+
+
+.light{
+    background-color: sandybrown;
+}
+.dark{
+    background-color: saddlebrown;
+}
+
+.valid{
+    background-color: lightblue;
+}
+.selected{
+    background-color: gold;
+}
+.cell{
+    width:100px;
+    height: 100px;
+    border:1px solid black;
+    cursor: pointer;
+    transition: 0.1s all;
+}
+.cell:hover{
+    opacity: 0.7;
+}
