@@ -1,9 +1,18 @@
+import Pawn from './pieces/Pawn.js';
+import Knight from './pieces/Knight.js';
+import Rook from './pieces/Rook.js';
+import King from './pieces/King.js';
+import Queen from './pieces/Queen.js';
+import Bishop from './pieces/Bishop.js';
+
 const cells = document.getElementsByClassName('cell');
+const gameText = document.getElementById('game-text');
+const placeAudio = new Audio('./chess_move.mp3');
+
 
 function CELLS(x,y){
     return cells[8*x+y];
 }
-let a
 
 const piece_image = {
     'K': './assets/white_king.svg',
@@ -20,6 +29,7 @@ const piece_image = {
     'n': './assets/black_knight.svg',
     'p': './assets/black_pawn.svg',
 }
+
 {/* 
 <FEN> ::=  
     <Piece Placement>
@@ -45,107 +55,21 @@ const piece_image = {
 
 // True is Light
 // False is Dark
-let start = true
-for(let i = 0 ; i < 8;i++){
 
-    for(let j = 0 ; j < 8;j++){
-    
-        CELLS(i,j).classList.add(start? 'light' : 'dark');
-        start = !start
-    }
-    start = !start
-}
-function Point(x,y){
+export function Point(x,y){
     return {x,y}
 }
-class Pawn{
-    constructor(type,position){
-        this.color = type == 'P'
-        this.position = position
-        this.img = piece_image[type]
-        this.isFirstMove = true;
-    }
-    validMoves(){
-        let {x,y} = this.position
-        let validMoves = []
-        let offset = -1*(this.color ? 1 : -1);
 
-        if(InBounds(x+offset,y) && isUnOccupied(x+offset,y)){
-            validMoves.push(Point(x+offset,y));
-            // Can only move to second if first is possible
-            if(this.isFirstMove && InBounds(x+offset*2,y) && isUnOccupied(x+offset*2,y)) validMoves.push(Point(x+offset*2,y));
-        }
-        return validMoves;
-
-    }
-    attackMoves(){
-
-    }
+export function InBounds(x,y){
+    return (x>=0 && y>=0 && x < 8 && y < 8);
 }
-class Rook{
-    constructor(type,position){
-        this.color = type == 'R'
-        this.position = position
-        this.img = piece_image[type]
-    }
+export function isUnOccupied(x,y){
+    return GRID[x][y] == '-';
 }
 
-class Knight {
-    constructor(type,position){
-        this.color = type == 'N'
-        this.position = position
-        this.img = piece_image[type]
-    }
-    validMoves(){
-        let {x,y} = this.position
-        let validMoves = []
-
-        let candidates = [
-            [x+2,y-1],[x-2,y-1],[x+2,y+1],[x-2,y+1],
-            [x-1,y-2],[x-1,y+2],[x+1,y-2],[x+1,y+2],
-        ]
-        for(let candidate of candidates){
-            let [X,Y] = candidate
-            if(InBounds(X,Y) && isUnOccupied(X,Y)){
-                validMoves.push(Point(X,Y));
-            }
-        }
-       
-        return validMoves;
-
-    }
+export function isEnemy(x,y,color){
+    return (GRID[x][y].type == GRID[x][y].type.toUpperCase() ) != color
 }
-
-class Bishop{
-    constructor(type,position){
-        this.color = type == 'B'
-        this.position = position
-        this.img = piece_image[type]
-    }
-}
-class Queen {
-    constructor(type,position){
-        this.color = type == 'Q'
-        this.position = position
-        this.img = piece_image[type]
-    }
-}
-
-class King {
-    constructor(type,position){
-        this.color = type == 'K'
-        this.position = position
-        this.img = piece_image[type]
-    }
-}
-
-let GRID = []
-let FEN = '8/8/8/8/4n3/8/8/8'
-
-
-
-
-
 
 
 function initializeGrid(FENString){
@@ -180,41 +104,107 @@ function initializeGrid(FENString){
     GRID.push(RANK);
 }
 
-initializeGrid(FEN);
-
 
 function renderGrid(){
-    GRID.forEach((rank,i)=>{
-        rank.forEach((file,j)=>{
-            if(GRID[i][j] == '-') return;
-            CELLS(i,j).innerHTML = `<img src="${GRID[i][j].img}" width="100px">`
-
-            CELLS(i,j).addEventListener('click',(e)=>{
-                let piece = GRID[i][j]
-                console.log(i,j,GRID[i][j].position)
-                CELLS(i,j).classList.add('selected');
-                console.log(piece.validMoves())
-                for(let move of piece.validMoves()){
-                    let {x,y} = move;
-                    CELLS(x,y).classList.add('valid');
-                };
+    let start = true
+    for(let i = 0 ; i < 8;i++){
+        for(let j = 0 ; j < 8;j++){
+            let cell = CELLS(i,j)
+            const clonedElement = cell.cloneNode(true);
+            cell.parentNode.replaceChild(clonedElement, cell);
+            cell = clonedElement;
+            cell.innerHTML = ``
+            cell.classList.remove('selected','valid','attack');
+            cell.classList.add(start? 'light' : 'dark');
+            start = !start
+            
+            cell.addEventListener('click',(e)=>{
+                GAME(e,i,j);
             })
-        })
-    })
-}
+            if(GRID[i][j] == '-') continue;
+            cell.innerHTML = `<img src="${piece_image[GRID[i][j].type]}" width="100px">`
+        }
+        start = !start
+    }
 
+}
+// ------------------------------------------------------------------------------------
+
+
+let GRID = []
+let FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
+
+let turn = true // White to move
+gameText.innerText = `${turn? 'White' : 'Black'} to Move!`;
+initializeGrid(FEN);
 renderGrid()
+let selectedPiece = null;
 
+function GAME(e,i,j){
+    let piece = GRID[i][j]
 
-function InBounds(x,y){
-    return (x>=0 && y>=0 && x < 8 && y < 8);
+    if(selectedPiece == null) {
+        if(piece.color != turn) return;
+        selectPiece(i,j);
+    }
+    else{
+        let moves = selectedPiece.validMoves()
+        let isCapture = false; // movement
+        let isLegal = false;
+        for(let move of moves.attackMoves){
+            let {x,y} = move;
+            if (x == i && y == j){ 
+                isLegal = true;
+                isCapture = true; // attack
+                break}
+        }
+        for(let move of moves.validMoves){
+            let {x,y} = move;
+            if (x == i && y == j){ isLegal = true; break}
+        }
+        
+        if(!isLegal){
+            selectedPiece = null;
+            renderGrid();
+            GAME(e,i,j);
+            return;
+        };
+        if(selectedPiece.type.toLowerCase() == 'p'){
+            selectedPiece.isFirstMove = false;
+        }
+        if(isCapture) {
+            console.log(`${selectedPiece.type}x${String.fromCharCode(97+j)}${i}`)
+        }
+        else{
+            console.log(`${selectedPiece.type}${String.fromCharCode(97+j)}${i}`)
+        }
+        GRID[i][j] = selectedPiece;
+        GRID[selectedPiece.position.x][selectedPiece.position.y] = '-';
+        GRID[i][j].position = {x:i,y:j};
+        selectedPiece = null;
+    
+        turn = !turn
+        gameText.innerText = `${turn? 'White' : 'Black'} to Move!`;
+        placeAudio.play();
+        renderGrid()
+    }
 }
-function isUnOccupied(x,y){
-    return GRID[x][y] == '-';
+
+function selectPiece(i,j){
+    let piece = GRID[i][j]
+    if(piece =='-') return;
+    renderGrid();
+    selectedPiece = piece;
+    CELLS(i,j).classList.add('selected');
+    for(let move of piece.validMoves().validMoves){
+        let {x,y} = move;
+        CELLS(x,y).classList.add('valid');
+    };
+    for(let move of piece.validMoves().attackMoves){
+        let {x,y} = move;
+        CELLS(x,y).classList.add('attack');
+    };
 }
-// function isEnemy(x,y,color){
-//     return GRID[x][y] == GRID[x][y].toUpperCase() ? color
-// }
 
 
-
+// ------------------------------------------------------------------------------------

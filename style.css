@@ -2,6 +2,7 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     background-color: black;
     min-height: 100vh;
 }
@@ -27,6 +28,9 @@ body{
 .selected{
     background-color: gold;
 }
+.attack{
+    background-color: lightcoral;
+}
 .cell{
     width:100px;
     height: 100px;
@@ -36,4 +40,13 @@ body{
 }
 .cell:hover{
     opacity: 0.7;
+}
+
+img{
+    pointer-events: none;
+}
+
+#game-text{
+    color : white; 
+    font-size : 2em;
 }
