@@ -5,6 +5,7 @@ import King from './pieces/King.js';
 import Queen from './pieces/Queen.js';
 import Bishop from './pieces/Bishop.js';
 
+
 const cells = document.getElementsByClassName('cell');
 const gameText = document.getElementById('game-text');
 const placeAudio = new Audio('./chess_move.mp3');
@@ -126,14 +127,14 @@ function renderGrid(){
         }
         start = !start
     }
-
 }
+
 // ------------------------------------------------------------------------------------
 
 
 let GRID = []
 let FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
-
+let check = false;
 let turn = true // White to move
 gameText.innerText = `${turn? 'White' : 'Black'} to Move!`;
 initializeGrid(FEN);
@@ -172,17 +173,26 @@ function GAME(e,i,j){
         if(selectedPiece.type.toLowerCase() == 'p'){
             selectedPiece.isFirstMove = false;
         }
-        if(isCapture) {
-            console.log(`${selectedPiece.type}x${String.fromCharCode(97+j)}${i}`)
-        }
-        else{
-            console.log(`${selectedPiece.type}${String.fromCharCode(97+j)}${i}`)
-        }
+       
         GRID[i][j] = selectedPiece;
         GRID[selectedPiece.position.x][selectedPiece.position.y] = '-';
         GRID[i][j].position = {x:i,y:j};
         selectedPiece = null;
-    
+
+        if(isCapture) {
+            console.log(`${GRID[i][j].type}x${String.fromCharCode(97+j)}${i}`)
+        }
+        else{
+            console.log(`${GRID[i][j].type}${String.fromCharCode(97+j)}${i}`)
+            // When a piece is moved ( Not captured ) check for a check.
+            for(let move of GRID[i][j].validMoves().attackMoves){
+                let {x,y} = move
+                if(GRID[x][y].type.toLowerCase()  == 'k'){
+                    check = true;
+                }
+            }
+        }
+
         turn = !turn
         gameText.innerText = `${turn? 'White' : 'Black'} to Move!`;
         placeAudio.play();
