@@ -189,6 +189,8 @@ function GAME(e,i,j){
                 let {x,y} = move
                 if(GRID[x][y].type.toLowerCase()  == 'k'){
                     check = true;
+                    console.log("Check");
+                    break;
                 }
             }
         }
