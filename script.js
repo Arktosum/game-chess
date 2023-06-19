@@ -190,6 +190,9 @@ function GAME(e,i,j){
                 if(GRID[x][y].type.toLowerCase()  == 'k'){
                     check = true;
                     console.log("Check");
+                    if(checkStateRoutine(!turn,GRID[i][j])){
+                        console.log("Checkmate!");
+                    }
                     break;
                 }
             }
@@ -218,5 +221,26 @@ function selectPiece(i,j){
     };
 }
 
-
+function allMoves(color){
+    let colorPieces = [];
+    for(let i = 0 ; i < 8 ; i++){
+        for(let j = 0 ; j < 8; j++){
+            if(GRID[i][j].color == color) colorPieces.push(GRID[i][j])
+        }
+    }
+    let allMoves = {
+        'valid' : [],
+        'attack' : []
+    }
+    for(let piece of colorPieces){
+        allMoves['valid'].push([piece.type,piece.validMoves().validMoves])
+        allMoves['attack'].push([piece.type,piece.validMoves().attackMoves])
+    }
+    return allMoves
+}
+function checkStateRoutine(turn,checkingPiece){
+    // Move king out of line of fire.
+    console.log(turn)
+    console.log(allMoves(turn));
+}
 // ------------------------------------------------------------------------------------
