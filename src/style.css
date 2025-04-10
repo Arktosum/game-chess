@@ -25,19 +25,21 @@
   width : 70px;
   height : 70px;
 }
+
+.cell-move{
+  background-color: lightblue !important;
+}
+.cell-attack{
+  background-color: lightcoral !important;
+}
+.cell-selected{
+  background-color: yellow !important;
+}
+
 .cell-light{
-  background-color: white;
+  background-color: white; 
 }
 .cell-dark{
   background-color: rgb(53, 53, 53);
 }
 
-.cell-move{
-  background-color: lightblue;
-}
-.cell-attack{
-  background-color: lightcoral;
-}
-.cell-selected{
-  background-color: yellow;
-}

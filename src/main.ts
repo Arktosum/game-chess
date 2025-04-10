@@ -1,4 +1,4 @@
-import FEN from './fen';
+import Engine from './engine';
 import './style.css'
 const root = document.getElementById('root')!
 
@@ -10,46 +10,14 @@ function oneToTwoD(i: number) {
 }
 const container = document.createElement('div');
 
-
-
-const PIECE_TO_IMAGE = {
-    'p': './assets/black_pawn.svg',
-    'b': './assets/black_bishop.svg',
-    'k': './assets/black_king.svg',
-    'q': './assets/black_queen.svg',
-    'n': './assets/black_knight.svg',
-    'r': './assets/black_rook.svg',
-
-    'P': './assets/white_pawn.svg',
-    'B': './assets/white_bishop.svg',
-    'K': './assets/white_king.svg',
-    'Q': './assets/white_queen.svg',
-    'N': './assets/white_knight.svg',
-    'R': './assets/white_rook.svg',
-
-    '.': './assets/transparent.svg'
-
-}
-
-
-
-enum PieceType {
-    PAWN,
-    KNIGHT,
-    BISHOP,
-    QUEEN,
-    KING,
-    ROOK
-}
-
-enum PieceColor {
-    BLACK,
-    WHITE
-}
-
-const initial_position = FEN.parse('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-
+const engine = new Engine();
 container.id = 'container'
+
+
+let valid_moves: number[] = []
+let attack_moves: number[] = []
+let selected_cell: number | null = null;
+
 for (let i = 0; i < 64; i++) {
     const cell = document.createElement('div');
     cell.className = 'cell'
@@ -61,17 +29,53 @@ for (let i = 0; i < 64; i++) {
     else {
         cell.classList.add('cell-dark')
     }
-
     const image = document.createElement('img');
 
     image.style.width = '100%';
     image.style.height = '100%';
-    image.src = PIECE_TO_IMAGE[initial_position[i]];
 
+    cell.addEventListener('click', () => {
+        const moves = engine.getMoves(i);
+        if (moves == null) {
+            selected_cell = null;
+            valid_moves = [];
+            attack_moves = [];
+            return;
+        }; // Maybe empty cell
+        selected_cell = i;
+        valid_moves = moves.validMoves;
+        attack_moves = moves.attackMoves;
+    })
     cell.appendChild(image);
-
     container.appendChild(cell);
 }
-
 root.appendChild(container);
+
+
+function update_board() {
+    for (let i = 0; i < 64; i++) {
+        let cell = container.children[i];
+        cell.classList.remove('cell-move');
+        cell.classList.remove('cell-attack');
+        cell.classList.remove('cell-selected');
+        if (valid_moves.includes(i)) {
+            cell.classList.add('cell-move');
+        }
+        if (attack_moves.includes(i)) {
+            cell.classList.add('cell-attack');
+        }
+        if (i == selected_cell) {
+            cell.classList.add('cell-selected')
+        }
+        const image = cell.children[0] as HTMLImageElement;
+        image.src = engine.getImage(engine.board[i]);
+    }
+    requestAnimationFrame(update_board);
+}
+
+requestAnimationFrame(update_board);
+
+
+
+
 
