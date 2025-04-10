@@ -35,16 +35,42 @@ for (let i = 0; i < 64; i++) {
     image.style.height = '100%';
 
     cell.addEventListener('click', () => {
-        const moves = engine.getMoves(i);
-        if (moves == null) {
-            selected_cell = null;
-            valid_moves = [];
-            attack_moves = [];
-            return;
-        }; // Maybe empty cell
-        selected_cell = i;
-        valid_moves = moves.validMoves;
-        attack_moves = moves.attackMoves;
+        if (selected_cell == null) {
+            const moves = engine.getMoves(i);
+            if (moves == null) {
+                selected_cell = null;
+                valid_moves = [];
+                attack_moves = [];
+                return;
+            }; // Maybe empty cell
+
+            selected_cell = i;
+            valid_moves = moves.validMoves;
+            attack_moves = moves.attackMoves;
+        }
+        else {
+            // Moving if clicked cell is in valid moves or attack movse
+            if (valid_moves.includes(i) || attack_moves.includes(i)) {
+                engine.makeMove(selected_cell, i);
+                valid_moves = [];
+                attack_moves = [];
+            }
+            else {
+                const moves = engine.getMoves(i);
+                if (moves == null) {
+                    selected_cell = null;
+                    valid_moves = [];
+                    attack_moves = [];
+                    return;
+                }; // Maybe empty cell
+
+                selected_cell = i;
+                valid_moves = moves.validMoves;
+                attack_moves = moves.attackMoves;
+            }
+        }
+
+
     })
     cell.appendChild(image);
     container.appendChild(cell);

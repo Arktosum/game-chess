@@ -85,7 +85,21 @@ export default class Engine {
         this.board = FEN.parse('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1').split("").map((symbol) => symbolToPiece[symbol]);
         this.active_color = PieceColor.WHITE;
     }
-    makeMove(from_position : number,to_position:number)
+    makeMove(from_position: number, to_position: number) {
+        let piece = this.board[from_position];
+        if (this.active_color != this.getColor(piece)) {
+            return;
+        }
+        let moves = this.getMoves(from_position);
+        if (moves == null) {
+            return;
+        }
+        if (moves.validMoves.includes(to_position) || moves.attackMoves.includes(to_position)) {
+            this.board[to_position] = piece;
+            this.board[to_position] = Piece.EMPTY;
+            this.active_color = this.active_color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+        }
+    }
     isEmpty(position: number) {
         return this.board[position] == Piece.EMPTY
     }
